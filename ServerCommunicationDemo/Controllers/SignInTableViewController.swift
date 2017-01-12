@@ -22,6 +22,7 @@ class SignInTableViewController: UITableViewController {
     
     // TODO: SignIn IBAction
     @IBAction func signInAction(_ sender: Any) {
+        
         signIn(username: emailTextField.text!, password: passwordTextField.text!)
     }
 }
@@ -33,6 +34,10 @@ extension SignInTableViewController {
     
     // MARK: signIn method
     func signIn(username: String, password: String) {
+        let activityData = ActivityData()
+        
+        NVActivityIndicatorPresenter.sharedInstance.startAnimating(activityData)
+        
         // Create dictionary as request paramater
         let paramater = [
             "EMAIL": "\(username)",
@@ -51,20 +56,21 @@ extension SignInTableViewController {
             
             // Response from server
             .responseJSON { (response) in
-                if let JSON = response.result.value {
-                    print("JSON: \(JSON)")
+                if let json = response.result.value {
+                    print(json)
+                    NVActivityIndicatorPresenter.sharedInstance.stopAnimating()
                     
-//                    // Create storyboard by name
-//                    let storyboard = UIStoryboard(name: "Main", bundle: nil)
-//                    
-//                    // Create view controller object by InitialViewController
-//                    // let vc = storyboard.instantiateInitialViewController()
-//                    
-//                    // Create view controller object by ViewController Identifier
-//                    let vc = storyboard.instantiateInitialViewController()
-//                    
-//                    // open view controller
-//                    self.present(vc!, animated: true, completion: nil)
+                    // Create storyboard by name
+                    let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                    
+                    // Create view controller object by InitialViewController
+                    // let vc = storyboard.instantiateInitialViewController()
+                    
+                    // Create view controller object by ViewController Identifier
+                    let vc = storyboard.instantiateViewController(withIdentifier: "RootStorybaordID")
+                    
+                    // open view controller
+                    self.present(vc, animated: true, completion: nil)
                 }
         }
     }

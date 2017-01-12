@@ -22,13 +22,13 @@ class HomeTableViewController: UITableViewController, NVActivityIndicatorViewabl
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // register class
-        let nib = UINib(nibName: "TableViewSectionHeader", bundle: nil)
-        tableView.register(nib, forHeaderFooterViewReuseIdentifier: "TableSectionHeader")
-        
-        // Add refresh control action
-        self.refreshControl?.addTarget(self, action: #selector(self.handleRefresh(refreshControl:)), for: UIControlEvents.valueChanged)
-        
+//        // register class
+//        let nib = UINib(nibName: "TableViewSectionHeader", bundle: nil)
+//        tableView.register(nib, forHeaderFooterViewReuseIdentifier: "TableSectionHeader")
+//        
+//        // Add refresh control action
+//        self.refreshControl?.addTarget(self, action: #selector(self.handleRefresh(refreshControl:)), for: UIControlEvents.valueChanged)
+//        
         getData()
     }
     
@@ -63,30 +63,15 @@ class HomeTableViewController: UITableViewController, NVActivityIndicatorViewabl
         startAnimating(size, message: "Loading...", type: NVActivityIndicatorType.ballBeat)
         
         // request Books, CoverPhotos, Authors
-        Alamofire.request(DataManager.Url.AUTH).responseJSON { (response) in
+        Alamofire.request("\(DataManager.Url.ARTICLE)?page=\(1)&limit=\(15)").responseJSON { (response) in
             if let data = response.data {
                 // JSON Results
                 let jsonObject = JSON(data: data)
-                self.books = jsonObject.array
+                print(jsonObject)
                 
-                Alamofire.request(DataManager.Url.AUTH).responseJSON(completionHandler: { (response) in
-                    if let data = response.data{
-                        // JSON Results
-                        let jsonObject = JSON(data: data)
-                        self.coverPhotos = jsonObject.array
-                        
-                        Alamofire.request(DataManager.Url.AUTH).responseJSON(completionHandler: { (response) in
-                            if let data = response.data{
-                                // JSON Results
-                                let jsonObject = JSON(data: data)
-                                self.authors = jsonObject.array
-                                self.tableView.reloadData()
-                                self.stopAnimating()
-                                self.refreshControl?.endRefreshing()
-                            }
-                        })
-                    }
-                })
+                self.tableView.reloadData()
+                self.stopAnimating()
+                self.refreshControl?.endRefreshing()
             }
         }
     }

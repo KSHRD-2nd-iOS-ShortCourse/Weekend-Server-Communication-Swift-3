@@ -13,6 +13,8 @@ struct DataManager {
         // Define url
         static let BASE = "http://120.136.24.174:15050/"
         static let AUTH = BASE + "v1/api/authentication"
+        static let USER = BASE + "v1/api/users"
+        static let ARTICLE = BASE + "v1/api/articles"
     }
     
     // Define header
