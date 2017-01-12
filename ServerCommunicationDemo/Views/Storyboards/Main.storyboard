@@ -159,7 +159,10 @@ marginally far upon excluding.</string>
                                                 <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="S2n-FL-Chy">
                                                     <rect key="frame" x="8" y="11" width="111" height="22"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                    <state key="normal" image="button"/>
+                                                    <fontDescription key="fontDescription" type="boldSystem" pointSize="16"/>
+                                                    <state key="normal" title="name">
+                                                        <color key="titleColor" cocoaTouchSystemColor="darkTextColor"/>
+                                                    </state>
                                                 </button>
                                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="line" translatesAutoresizingMaskIntoConstraints="NO" id="1Ts-Ze-BTy">
                                                     <rect key="frame" x="8" y="47" width="304" height="1"/>
@@ -202,6 +205,7 @@ Drinking vinegar beard deep v mlkshk, cornhole typewriter venmo selfies whatever
                         </connections>
                     </tableView>
                     <connections>
+                        <outlet property="categoryLabel" destination="S2n-FL-Chy" id="bnz-RW-Bfo"/>
                         <outlet property="coverImageView" destination="tUJ-u7-EMJ" id="3RK-cm-OY5"/>
                         <outlet property="descriptionLabel" destination="pf7-g4-U4P" id="Nno-lE-3Xv"/>
                         <outlet property="titleLabel" destination="DQK-C5-0IY" id="2XO-NF-1QB"/>

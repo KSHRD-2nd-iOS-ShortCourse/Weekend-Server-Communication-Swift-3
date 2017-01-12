@@ -18,6 +18,7 @@ class DetailTableViewController: UITableViewController, NVActivityIndicatorViewa
     @IBOutlet var coverImageView: UIImageView!
     @IBOutlet var titleLabel: UILabel!
     @IBOutlet var descriptionLabel: UILabel!
+    @IBOutlet weak var categoryLabel: UIButton!
     
     // Property
     var articleID : String?
@@ -40,13 +41,21 @@ class DetailTableViewController: UITableViewController, NVActivityIndicatorViewa
                 
                 switch articleResponse.result{
                 case.success(let article):
-                    
                     // set data
                     self.titleLabel.text = article.title!
                     self.descriptionLabel.text = article.description!
                     
                     self.coverImageView.image = UIImage(data: try! Data(contentsOf: URL(string: article.image!.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!))
                     
+                    let categoryName = (article.category?["NAME"] as? String) ?? ""
+                    self.categoryLabel.setTitle(categoryName, for: .normal)
+                    self.categoryLabel.backgroundColor = #colorLiteral(red: 0.4236315489, green: 0.4478745461, blue: 0.788145721, alpha: 1)
+                    self.categoryLabel.setTitleColor(#colorLiteral(red: 1, green: 1, blue: 1, alpha: 1), for: .normal)
+                    self.categoryLabel.layer.cornerRadius = 10
+                    self.categoryLabel.layer.masksToBounds = true
+                    
+                    self.navigationItem.title = categoryName
+                        
                     self.tableView.reloadData()
                     self.stopAnimating()
                     

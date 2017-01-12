@@ -102,6 +102,7 @@ extension HomeTableViewController {
         cell.titleLabel.text = article["TITLE"].stringValue
         cell.descriptionLabel.text = article["DESCRIPTION"].stringValue
         cell.coverImageView.kf.setImage(with: URL(string: article["IMAGE"].stringValue.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!), placeholder: UIImage(named: "google_logo"))
+        
         return cell
     }
     
