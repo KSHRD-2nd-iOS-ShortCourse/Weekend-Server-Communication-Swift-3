@@ -20,7 +20,7 @@ class DetailTableViewController: UITableViewController, NVActivityIndicatorViewa
     @IBOutlet var descriptionLabel: UILabel!
     
     // Property
-    var bookId : String?
+    var articleID : String?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,32 +30,25 @@ class DetailTableViewController: UITableViewController, NVActivityIndicatorViewa
         startAnimating(size, message: "Loading...", type: NVActivityIndicatorType.ballBeat)
         
         // if have book id request data
-        if let id = bookId {
+        if let id = articleID {
             
             // request request book
-            Alamofire.request("http://fakerestapi.azurewebsites.net/api/Books/\(id)").responseObject(completionHandler: { (bookResponse: DataResponse<Book>) in
+            Alamofire.request("\(DataManager.Url.ARTICLE)/\(id)",
+                method: .get,
+                headers: DataManager.HEADERS)
+                .responseObject(completionHandler: { (articleResponse: DataResponse<Article>) in
                 
-                switch bookResponse.result{
-                case .success(let bookData):
+                switch articleResponse.result{
+                case.success(let article):
                     
-                    // request book cover
-                    Alamofire.request("http://fakerestapi.azurewebsites.net/api/CoverPhotos/\(id)").responseObject(completionHandler: { (bookCoverResponse: DataResponse<BookCover>) in
-                        switch bookCoverResponse.result{
-                        case.success(let bookCoverData):
-                            
-                            // set data
-                            self.titleLabel.text = bookData.title!
-                            self.descriptionLabel.text = bookData.description!
-                            
-                            self.coverImageView.image = UIImage(data: try! Data(contentsOf: URL(string: bookCoverData.url!.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!))
-                            
-                            self.tableView.reloadData()
-                            self.stopAnimating()
-                            
-                        case.failure(let error):
-                            print("\(error)")
-                        }
-                    })
+                    // set data
+                    self.titleLabel.text = article.title!
+                    self.descriptionLabel.text = article.description!
+                    
+                    self.coverImageView.image = UIImage(data: try! Data(contentsOf: URL(string: article.image!.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!))
+                    
+                    self.tableView.reloadData()
+                    self.stopAnimating()
                     
                 case.failure(let error):
                     print("\(error)")

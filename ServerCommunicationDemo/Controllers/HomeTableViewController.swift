@@ -39,7 +39,7 @@ class HomeTableViewController: UITableViewController, NVActivityIndicatorViewabl
         
         if segue.identifier == "showDetail" {
             let destView = segue.destination as! DetailTableViewController
-            destView.bookId = sender as? String
+            destView.articleID = sender as? String
         }else if segue.identifier == "showEdit"{
             let destView = segue.destination as! AddEditInfoTableViewController
             destView.book = sender as? [String : Any]
