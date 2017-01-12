@@ -18,6 +18,18 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <view key="tableFooterView" contentMode="scaleToFill" id="Kei-rG-Kwh">
+                            <rect key="frame" x="0.0" y="393" width="320" height="44"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <subviews>
+                                <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="mA8-AS-NDE">
+                                    <rect key="frame" x="142" y="0.0" width="37" height="37"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <color key="color" red="0.42363154889999999" green="0.44787454609999999" blue="0.78814572100000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </activityIndicatorView>
+                            </subviews>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        </view>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="homeCell" rowHeight="365" id="HIJ-3a-2F1" customClass="HomeTableViewCell" customModule="ServerCommunicationDemo" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="28" width="320" height="365"/>
@@ -98,6 +110,8 @@ marginally far upon excluding.</string>
                         <autoresizingMask key="autoresizingMask"/>
                     </refreshControl>
                     <connections>
+                        <outlet property="footerView" destination="Kei-rG-Kwh" id="BlV-FG-gld"/>
+                        <outlet property="footerindicator" destination="mA8-AS-NDE" id="Xi7-TS-B9j"/>
                         <segue destination="Kpe-yR-7A7" kind="show" identifier="showDetail" id="twz-DG-iRf"/>
                     </connections>
                 </tableViewController>
@@ -275,9 +289,10 @@ Drinking vinegar beard deep v mlkshk, cornhole typewriter venmo selfies whatever
                                             <rect key="frame" x="0.0" y="0.0" width="320" height="141"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <imageView contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="Img" translatesAutoresizingMaskIntoConstraints="NO" id="hV9-MO-22S">
+                                                <imageView contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="noimage_thumbnail" translatesAutoresizingMaskIntoConstraints="NO" id="hV9-MO-22S">
                                                     <rect key="frame" x="8" y="7" width="304" height="128"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                    <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <gestureRecognizers/>
                                                     <connections>
                                                         <outletCollection property="gestureRecognizers" destination="cc4-0v-FSS" appends="YES" id="M4z-lV-RVw"/>
@@ -317,7 +332,7 @@ Drinking vinegar beard deep v mlkshk, cornhole typewriter venmo selfies whatever
                     </tableView>
                     <navigationItem key="navigationItem" title="Add New" id="2Be-MM-mYf"/>
                     <connections>
-                        <outlet property="coverImageView" destination="hV9-MO-22S" id="fx9-FA-fxZ"/>
+                        <outlet property="articleImageView" destination="hV9-MO-22S" id="Cfj-K4-kTx"/>
                         <outlet property="descriptionLabel" destination="XJR-MT-rvA" id="eHe-du-ZQ2"/>
                         <outlet property="titleLabel" destination="REr-IV-tat" id="V5T-ev-VJ7"/>
                     </connections>
@@ -360,5 +375,6 @@ Drinking vinegar beard deep v mlkshk, cornhole typewriter venmo selfies whatever
         <image name="button" width="111" height="20"/>
         <image name="heart" width="15" height="14"/>
         <image name="line" width="328" height="1"/>
+        <image name="noimage_thumbnail" width="240" height="184"/>
     </resources>
 </document>

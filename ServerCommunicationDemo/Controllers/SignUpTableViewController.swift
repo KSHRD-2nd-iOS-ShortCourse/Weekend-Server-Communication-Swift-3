@@ -102,7 +102,7 @@ class SignUpTableViewController: UITableViewController, NVActivityIndicatorViewa
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]){
         
         // Get image
-        if let pickedImage = info[UIImagePickerControllerOriginalImage] as? UIImage{
+        if let pickedImage = info[UIImagePickerControllerEditedImage] as? UIImage{
             // config property and assign image
             self.profileImageView.contentMode = .scaleAspectFill
             self.profileImageView.image = pickedImage

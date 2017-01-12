@@ -7,27 +7,30 @@
 //
 
 import UIKit
+import SwiftyJSON
 import Alamofire
 import NVActivityIndicatorView
 
 class AddEditInfoTableViewController: UITableViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, NVActivityIndicatorViewable {
     
     // Property
-    var book : [String : Any]?
+    var article : JSON?
     let imagePicker = UIImagePickerController()
     
     // Outlet
     @IBOutlet var descriptionLabel: UITextField!
     @IBOutlet var titleLabel: UITextField!
-    @IBOutlet var coverImageView: UIImageView!
+    @IBOutlet var articleImageView: UIImageView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         // Check if book is not nil, assign value to outlet
-        if let book = book{
-            titleLabel.text = book["Title"] as! String?
-            descriptionLabel.text = book["Description"] as! String?
+        if let article = article{
+            print(article)
+            titleLabel.text = article["TITLE"].stringValue
+            descriptionLabel.text = article["DESCRIPTION"].stringValue
+            articleImageView.kf.setImage(with: URL(string: article["IMAGE"].stringValue), placeholder: UIImage(named: "noimage_thumbnail"))
         }
         
         // set delegate for imagePicker
@@ -50,38 +53,72 @@ class AddEditInfoTableViewController: UITableViewController, UIImagePickerContro
         // "December 25, 2016 at 7:00:00 AM"
         print(dateString)
         
-        let paramater = [
-            "Title": titleLabel.text!,
-            "Description": descriptionLabel.text!,
-            "PageCount": 0,
-            "Excerpt": "string",
-            "PublishDate": dateString
-            ] as [String : Any]
-        
-        var url = DataManager.Url.AUTH
+        var url = DataManager.Url.ARTICLE
         var method = HTTPMethod.post
         
         // if have book data > update
-        if book != nil  {
-            url = "\(DataManager.Url.AUTH)/\(book!["ID"]!)"
+        if article != nil  {
+            url = "\(DataManager.Url.ARTICLE)/\(article!["ID"].stringValue)"
             method = HTTPMethod.put
         }
         
-//        // request
-//        Alamofire.request(url,
-//                          method: method,
-//                          parameters: paramater,
-//                          encoding: JSONEncoding.default,
-//                          headers: DataManager.Url.HEADERS)
-//            .responseJSON { (response) in
-//            self.stopAnimating()
-//            if response.response?.statusCode == 200 {
-//                print("\(method) success")
-//                _ = self.navigationController?.popViewController(animated: true)
-//            }else{
-//                print("\(method) false")
-//            }
-//        }
+        uploadFile(file: UIImageJPEGRepresentation(self.articleImageView.image!, 1)!) { (fileUrl) in
+            
+            let paramater = [
+                "TITLE": self.titleLabel.text!,
+                "DESCRIPTION": self.descriptionLabel.text!,
+                "AUTHOR": 585,
+                "CATEGORY_ID": 1,
+                "STATUS": "1",
+                "IMAGE": fileUrl ?? ""
+                ] as [String : Any]
+            
+            // request
+            Alamofire.request(url,
+                              method: method,
+                              parameters: paramater,
+                              encoding: JSONEncoding.default,
+                              headers: DataManager.HEADERS)
+                .responseJSON { (response) in
+                    // show other NVActivityIndicator
+                    self.stopAnimating()
+                    if response.response?.statusCode == 200 {
+                        _ = self.navigationController?.popViewController(animated: true)
+                    }
+            }
+        }
+    }
+    
+    func uploadFile(file : Data, completion: @escaping (_ result: String?) -> Void) {
+        /*
+         Request :
+         - JSONEncoding type creates a JSON representation of the parameters object
+         */
+        Alamofire.upload(multipartFormData: { (multipartFormData) in
+            
+            multipartFormData.append(file, withName: "FILE", fileName: ".jpg",mimeType: "image/jpeg") // append image
+            
+            
+        }, to: DataManager.Url.FILE,
+           method: .post,
+           headers:  DataManager.HEADERS,
+           encodingCompletion: { (encodingResult) in
+            
+            switch encodingResult {
+            case .success(let upload, _, _):
+                upload.responseJSON { response in
+                    
+                    if let json = response.result.value {
+                        let data = json as! [String: Any]
+                        
+                        completion(data["DATA"] as? String)
+                    }
+                }
+            case .failure(let encodingError):
+                print(encodingError)
+            }
+        })
+        
     }
 }
 
@@ -91,7 +128,7 @@ extension AddEditInfoTableViewController {
     // TODO: Browse Image IBAction
     @IBAction func browseImage(_ sender: Any) {
         // coonfig property
-        imagePicker.allowsEditing = false
+        imagePicker.allowsEditing = true
         imagePicker.sourceType = .photoLibrary
         
         // show image picker
@@ -102,10 +139,10 @@ extension AddEditInfoTableViewController {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]){
         
         // Get image
-        if let pickedImage = info[UIImagePickerControllerOriginalImage] as? UIImage{
+        if let pickedImage = info[UIImagePickerControllerEditedImage] as? UIImage{
             // config property and assign image
-            coverImageView.contentMode = .scaleAspectFit
-            coverImageView.image = pickedImage
+            articleImageView.contentMode = .scaleAspectFit
+            articleImageView.image = pickedImage
         }
         
         dismiss(animated: true, completion: nil)
@@ -131,9 +168,9 @@ extension AddEditInfoTableViewController {
     // TODO: Image Picker Did Finish Picking Image
     func imagePickerController(picker: UIImagePickerController, didFinishPickingImage image: UIImage!, editingInfo: [NSObject : AnyObject]!) {
         
-        // Set image to coverImageView
-        coverImageView.image = image
+        // Set image to articleImageView
+        articleImageView.image = image
         self.dismiss(animated: true, completion: nil);
     }
-
+    
 }

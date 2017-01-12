@@ -11,10 +11,11 @@ import Foundation
 struct DataManager {
     struct Url {
         // Define url
-        static let BASE = "http://120.136.24.174:15050/"
-        static let AUTH = BASE + "v1/api/authentication"
-        static let USER = BASE + "v1/api/users"
-        static let ARTICLE = BASE + "v1/api/articles"
+        static let BASE = "http://120.136.24.174:15050/v1/api/"
+        static let AUTH = BASE + "authentication"
+        static let USER = BASE + "users"
+        static let ARTICLE = BASE + "articles"
+        static let FILE = BASE + "uploadfile/single"
     }
     
     // Define header

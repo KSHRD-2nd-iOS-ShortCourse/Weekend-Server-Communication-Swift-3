@@ -15,8 +15,13 @@ import NVActivityIndicatorView
 class HomeTableViewController: UITableViewController, NVActivityIndicatorViewable {
     
     // Property
-    var articles : [JSON]! = [JSON]()
+    var articles : [JSON]! = []
+    var currentPage = 0
+    var totalPage = 0
     
+    @IBOutlet weak var footerindicator: UIActivityIndicatorView!
+    
+    @IBOutlet weak var footerView: UIView!
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -27,7 +32,7 @@ class HomeTableViewController: UITableViewController, NVActivityIndicatorViewabl
         // Add refresh control action
         self.refreshControl?.addTarget(self, action: #selector(self.handleRefresh(refreshControl:)), for: UIControlEvents.valueChanged)
         
-        getData()
+        getData(pageNumber: 1)
     }
     
     
@@ -42,7 +47,7 @@ class HomeTableViewController: UITableViewController, NVActivityIndicatorViewabl
             destView.articleID = sender as? String
         }else if segue.identifier == "showEdit"{
             let destView = segue.destination as! AddEditInfoTableViewController
-            destView.book = sender as? [String : Any]
+            destView.article = sender as? JSON
         }
     }
     
@@ -51,35 +56,70 @@ class HomeTableViewController: UITableViewController, NVActivityIndicatorViewabl
         // Fetch more objects from a web service, for example...
         
         // Simply adding an object to the data source for this example
-        getData()
+        self.articles.removeAll()
+        getData(pageNumber: 1)
         
     }
     
-    func getData() {
-        // Create NVActivityIndicator
-        let size = CGSize(width: 30, height:30)
-        startAnimating(size, message: "Loading...", type: NVActivityIndicatorType.ballBeat)
+    func getData(pageNumber : Int) {
+        if self.currentPage == 1 {
+            // Create NVActivityIndicator
+            let size = CGSize(width: 30, height:30)
+            startAnimating(size, message: "Loading...", type: NVActivityIndicatorType.ballBeat)
+        }
         
         // request data
         Alamofire.request("\(DataManager.Url.ARTICLE)",
             method: .get,
-            parameters: ["page" : 1,
-                         "limit" : 15],
+            parameters: ["page" : pageNumber,
+                         "limit" : 5],
             headers: DataManager.HEADERS)
             .responseJSON { (response) in
                 
                 if let data = response.data {
                     // JSON Results
                     let jsonObject = JSON(data: data)
-                    print(jsonObject)
-                    self.articles = jsonObject["DATA"].array
+                    
+                    // get pagination value
+                    let pagination = jsonObject["PAGINATION"].dictionaryValue
+                    // get value by pagination key
+                    self.currentPage = pagination["PAGE"]!.intValue
+                    self.totalPage = pagination["TOTAL_PAGES"]!.intValue
+                    
+                    // if current == 1 means first request, else append data
+                    if self.currentPage == 1{
+                        self.articles = jsonObject["DATA"].arrayValue
+                    }else{
+                        self.articles.append(contentsOf: jsonObject["DATA"].arrayValue)
+                    }
                     
                     self.tableView.reloadData()
                     self.stopAnimating()
+                    // hide footer and indicator
+                    self.footerView.isHidden = true
+                    self.footerindicator.stopAnimating()
                     self.refreshControl?.endRefreshing()
+                    
                 }
         }
     }
+    
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        
+        // indicator stop loading
+        if !self.footerindicator.isAnimating {
+            // last cell > or = amount of users
+            if indexPath.section + 1 >= self.articles.count {
+                
+                if currentPage < totalPage{
+                    self.footerView.isHidden = false
+                    self.footerindicator.startAnimating()
+                    getData(pageNumber: currentPage + 1)
+                }
+            }
+        }
+    }
+
 }
 
 
@@ -101,7 +141,7 @@ extension HomeTableViewController {
         let article = self.articles[indexPath.section]
         cell.titleLabel.text = article["TITLE"].stringValue
         cell.descriptionLabel.text = article["DESCRIPTION"].stringValue
-        cell.coverImageView.kf.setImage(with: URL(string: article["IMAGE"].stringValue.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!), placeholder: UIImage(named: "google_logo"))
+        cell.coverImageView.kf.setImage(with: URL(string: article["IMAGE"].stringValue.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!), placeholder: UIImage(named: "noimage_thumbnail"))
         
         return cell
     }
@@ -128,7 +168,7 @@ extension HomeTableViewController {
         header.dateTimeLabel.text = stringFromDate
         
         // load profile image
-        header.profileImageView.kf.setImage(with: URL(string: self.articles[section]["AUTHOR"]["IMAGE_URL"].stringValue.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!), placeholder: UIImage(named: "google_logo"))
+        header.profileImageView.kf.setImage(with: URL(string: self.articles[section]["AUTHOR"]["IMAGE_URL"].stringValue.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!), placeholder: UIImage(named: "noimage_thumbnail"))
         
         return cell
     }
@@ -162,7 +202,7 @@ extension HomeTableViewController {
         }
         
         let edit = UITableViewRowAction(style: .default, title: "Edit") { action, index in
-            self.performSegue(withIdentifier: "showEdit", sender: self.articles[indexPath.section].dictionaryObject)
+            self.performSegue(withIdentifier: "showEdit", sender: self.articles[indexPath.section])
         }
         
         edit.backgroundColor = UIColor.brown
