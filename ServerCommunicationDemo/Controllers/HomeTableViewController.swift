@@ -15,20 +15,18 @@ import NVActivityIndicatorView
 class HomeTableViewController: UITableViewController, NVActivityIndicatorViewable {
     
     // Property
-    var books : [JSON]! = [JSON]()
-    var coverPhotos : [JSON]! = [JSON]()
-    var authors : [JSON]! = [JSON]()
+    var articles : [JSON]! = [JSON]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-//        // register class
-//        let nib = UINib(nibName: "TableViewSectionHeader", bundle: nil)
-//        tableView.register(nib, forHeaderFooterViewReuseIdentifier: "TableSectionHeader")
-//        
-//        // Add refresh control action
-//        self.refreshControl?.addTarget(self, action: #selector(self.handleRefresh(refreshControl:)), for: UIControlEvents.valueChanged)
-//        
+        // register class
+        let nib = UINib(nibName: "TableViewSectionHeader", bundle: nil)
+        tableView.register(nib, forHeaderFooterViewReuseIdentifier: "TableSectionHeader")
+        
+        // Add refresh control action
+        self.refreshControl?.addTarget(self, action: #selector(self.handleRefresh(refreshControl:)), for: UIControlEvents.valueChanged)
+        
         getData()
     }
     
@@ -62,17 +60,24 @@ class HomeTableViewController: UITableViewController, NVActivityIndicatorViewabl
         let size = CGSize(width: 30, height:30)
         startAnimating(size, message: "Loading...", type: NVActivityIndicatorType.ballBeat)
         
-        // request Books, CoverPhotos, Authors
-        Alamofire.request("\(DataManager.Url.ARTICLE)?page=\(1)&limit=\(15)").responseJSON { (response) in
-            if let data = response.data {
-                // JSON Results
-                let jsonObject = JSON(data: data)
-                print(jsonObject)
+        // request data
+        Alamofire.request("\(DataManager.Url.ARTICLE)",
+            method: .get,
+            parameters: ["page" : 1,
+                         "limit" : 15],
+            headers: DataManager.HEADERS)
+            .responseJSON { (response) in
                 
-                self.tableView.reloadData()
-                self.stopAnimating()
-                self.refreshControl?.endRefreshing()
-            }
+                if let data = response.data {
+                    // JSON Results
+                    let jsonObject = JSON(data: data)
+                    print(jsonObject)
+                    self.articles = jsonObject["DATA"].array
+                    
+                    self.tableView.reloadData()
+                    self.stopAnimating()
+                    self.refreshControl?.endRefreshing()
+                }
         }
     }
 }
@@ -82,7 +87,7 @@ class HomeTableViewController: UITableViewController, NVActivityIndicatorViewabl
 extension HomeTableViewController {
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return self.books.count
+        return self.articles.count
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -93,18 +98,15 @@ extension HomeTableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: "homeCell", for: indexPath) as! HomeTableViewCell
         
         // Configure the cell...
-        let book = self.books[indexPath.section]
-        let cover = self.coverPhotos[indexPath.section]
-        cell.titleLabel.text = book["Title"].stringValue
-        cell.descriptionLabel.text = book["Description"].stringValue
-        
-        //cell.coverImageView.image = UIImage(data: try! Data(contentsOf: URL(string: cover["Url"].stringValue.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!))
-        cell.coverImageView.kf.setImage(with: URL(string: cover["Url"].stringValue.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!), placeholder: UIImage(named: "google_logo"))
+        let article = self.articles[indexPath.section]
+        cell.titleLabel.text = article["TITLE"].stringValue
+        cell.descriptionLabel.text = article["DESCRIPTION"].stringValue
+        cell.coverImageView.kf.setImage(with: URL(string: article["IMAGE"].stringValue.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!), placeholder: UIImage(named: "google_logo"))
         return cell
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        performSegue(withIdentifier: "showDetail", sender: books[indexPath.section]["ID"].stringValue)
+        performSegue(withIdentifier: "showDetail", sender: self.articles[indexPath.section]["ID"].stringValue)
     }
     
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
@@ -112,16 +114,20 @@ extension HomeTableViewController {
         let cell = self.tableView.dequeueReusableHeaderFooterView(withIdentifier: "TableSectionHeader")
         
         let header = cell as! TableViewSectionHeader
-        header.titleLabel.text = authors[section]["FirstName"].stringValue
+        header.titleLabel.text = self.articles[section]["AUTHOR"]["NAME"].stringValue
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMddHHmmss"
+        dateFormatter.timeZone = TimeZone(identifier: "UTC")
+        let dateFromString = dateFormatter.date(from: self.articles[section]["CREATED_DATE"].stringValue)
+        
+        dateFormatter.dateFormat = "dd-MM-YYYY HH:mm"
+        
+        let stringFromDate = dateFormatter.string(from: dateFromString!)
+        header.dateTimeLabel.text = stringFromDate
         
         // load profile image
-        let coverPhoto = self.coverPhotos[section]
-        
-        let url = URL(string: coverPhoto["Url"].stringValue.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)
-        
-        let placeHolderImage = UIImage(named: "google_logo")
-        
-        header.profileImageView.kf.setImage(with: url, placeholder: placeHolderImage)
+        header.profileImageView.kf.setImage(with: URL(string: self.articles[section]["AUTHOR"]["IMAGE_URL"].stringValue.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!), placeholder: UIImage(named: "google_logo"))
         
         return cell
     }
@@ -140,26 +146,25 @@ extension HomeTableViewController {
         let delete = UITableViewRowAction(style: .destructive, title: "Delete") { action, index in
             
             self.startAnimating()
-//            Alamofire.request("\(DataManager.Url.BOOK)/\(self.books[indexPath.section]["ID"])", method: .delete).responseJSON { (response) in
-//                if response.response?.statusCode == 200 {
-//                    
-//                    tableView.beginUpdates()
-//                    self.books.remove(at: indexPath.section)
-//                    self.coverPhotos.remove(at: indexPath.section)
-//                    self.authors.remove(at: indexPath.section)
-//                    tableView.deleteSections(IndexSet(integer: indexPath.section), with: .fade)
-//                    tableView.endUpdates()
-//                    
-//                    self.stopAnimating()
-//                }
-//            }
+            Alamofire.request("\(DataManager.Url.ARTICLE)/\(self.articles[indexPath.section]["ID"])", method: .delete, headers: DataManager.HEADERS).responseJSON { (response) in
+                
+                if response.response?.statusCode == 200 {
+                    
+                    tableView.beginUpdates()
+                    self.articles.remove(at: indexPath.section)
+                    tableView.deleteSections(IndexSet(integer: indexPath.section), with: .fade)
+                    tableView.endUpdates()
+                    
+                    self.stopAnimating()
+                }
+            }
         }
         
-        let done = UITableViewRowAction(style: .default, title: "Edit") { action, index in
-            self.performSegue(withIdentifier: "showEdit", sender: self.books[indexPath.section].dictionaryObject)
+        let edit = UITableViewRowAction(style: .default, title: "Edit") { action, index in
+            self.performSegue(withIdentifier: "showEdit", sender: self.articles[indexPath.section].dictionaryObject)
         }
         
-        done.backgroundColor = UIColor.brown
-        return [delete, done]
+        edit.backgroundColor = UIColor.brown
+        return [delete, edit]
     }
 }
